@@ -23,6 +23,7 @@ WEATHER_URL = 'http://xml.weather.yahoo.com/forecastrss?p=%s'
 METRIC_PARAMETER = '&u=c'
 WEATHER_NS = 'http://xml.weather.yahoo.com/ns/rss/1.0'
 
+
 def get_weather(location_code, options):
     """
     Fetches weather report from Yahoo!
@@ -60,9 +61,11 @@ def get_weather(location_code, options):
     forecasts = []
 
     # Walk the DOM in order to find the forecast nodes.
-    for i, node in enumerate(dom.getElementsByTagNameNS(WEATHER_NS, 'forecast')):
+    for i, node in enumerate(dom.getElementsByTagNameNS(WEATHER_NS,
+                                                        'forecast')):
 
-        # Stop if the number of obtained forecasts equals the number of requested days
+        # Stop if the number of obtained forecasts equals the number of
+        # requested days
         if i >= options.forecast:
             break
         else:
@@ -86,6 +89,7 @@ def get_weather(location_code, options):
 
     return weather_data
 
+
 def create_report(weather_data, options):
     """
     Constructs a weather report as a string.
@@ -100,7 +104,7 @@ def create_report(weather_data, options):
     """
 
     if weather_data is None:
-        return None
+            return None
 
     report = []
 
@@ -110,7 +114,7 @@ def create_report(weather_data, options):
             report.append("Location:")
 
         # Add the location.
-        location_str = "%(city)s %(region)s\n" % weather_data
+        location_str = '{city} {region}\n'.format(**weather_data)
         report.append(location_str)
 
     if not options.nocurr:
@@ -123,14 +127,13 @@ def create_report(weather_data, options):
         # degree = u"\xb0"
         degree = ""
         if not options.conditions:
-            curr_str = curr_str + "%(current_temp)s" % weather_data + degree + \
-                       "%(units)s" % weather_data
+            curr_str += '{current_temp}{units}'.format(**weather_data)
 
         if not options.conditions and not options.temperature:
             curr_str = curr_str + options.delim.decode('string_escape')
 
         if not options.temperature:
-            curr_str = curr_str + "%(current_condition)s\n" % weather_data
+            curr_str += '{current_condition}\n'.format(**weather_data)
 
         report.append(curr_str)
 
@@ -141,20 +144,19 @@ def create_report(weather_data, options):
 
         # Add the forecasts.
         for forecast in weather_data['forecasts']:
-
             forecast['units'] = weather_data['units']
 
-            forecast_str = """\
-  %(date)s
-    High: %(high)s%(units)s
-    Low: %(low)s%(units)s
-    Conditions: %(condition)s""" % forecast
+            forecast_str2 = '''\
+  {date}
+    High: {high}{units}
+    Low: {low}{units}
+    Conditions: {condition}'''.format(**forecast)
+            report.append(forecast_str2)
 
-            report.append(forecast_str)
+    report_str2 = "\n".join(report)
 
-    report_str = "\n".join(report)
+    return report_str2
 
-    return report_str
 
 def create_cli_parser():
     """
@@ -164,81 +166,87 @@ def create_cli_parser():
     cli_parser = ArgumentParser(description=__doc__)
 
     cli_parser.add_argument('location_code',
-        help="The location code for the region you want to retrieve weather for. See http://developer.yahoo.com/weather/#req""")
+                            help="The location code for the region you want to\
+                            retrieve weather for. See http://developer.yahoo.c\
+                            om/weather/#req")
 
     # Add the CLI options
     cli_parser.add_argument('-n', '--nocurr', action='store_true',
-        help="suppress reporting the current weather conditions",
-        default=False)
+                            help="suppress reporting the current weather condi\
+                            tions",
+                            default=False)
 
     cli_parser.add_argument('-d', '--delim', action='store',
-        help="use the given string as a delimiter between the temperature and the conditions",
-        default=" and ")
+                            help="use the given string as a delimiter between \
+                            the temperature and the conditions",
+                            default=" and ")
 
     cli_parser.add_argument('-f', '--forecast', action='store', type=int,
-        help="show the forecast for DAYS days",
-        default=0)
+                            help="show the forecast for DAYS days",
+                            default=0)
 
     cli_parser.add_argument('-l', '--location', action='store_true',
-        help="print the location of the weather",
-        default=False)
+                            help="print the location of the weather",
+                            default=False)
 
     cli_parser.add_argument('-m', '--metric', action='store_true',
-        help="show the temperature in metric units (C)",
-        default=False)
+                            help="show the temperature in metric units (C)",
+                            default=False)
 
     cli_parser.add_argument('-v', '--verbose', action='store_true',
-        help="print the weather section headers",
-        default=False)
+                            help="print the weather section headers",
+                            default=False)
 
     cli_parser.add_argument('-t', '--temperature', action="store_true",
-        help="print only the current temperature",
-        default=False)
+                            help="print only the current temperature",
+                            default=False)
 
     cli_parser.add_argument('-c', '--conditions', action="store_true",
-        help="print only the current conditions",
-        default=False)
+                            help="print only the current conditions",
+                            default=False)
 
     cli_parser.add_argument('-o', '--output', action='store',
-        help="print the weather conditions to a specified file name",
-        default="")
+                            help="print the weather conditions to a specified \
+                            file name",
+                            default="")
 
     return cli_parser
 
+
 def main(argv):
-	"""
-	Main entry point of this file. Parses argv, gets weather, then emits output
-	"""
+    """
+    Main entry point of this file. Parses argv, gets weather, then emits output
+    """
 
-	# Create the command line parser.
-	cli_parser = create_cli_parser()
+    # Create the command line parser.
+    cli_parser = create_cli_parser()
 
-	# Get the options and arguments.
-	opts = cli_parser.parse_args(argv)
+    # Get the options and arguments.
+    opts = cli_parser.parse_args(argv)
 
-	# Limit the requested forecast days.
-	if opts.forecast > DAYS_LIMIT or opts.forecast < 0:
-		cli_parser.error("Days to forecast must be between 0 and %d"
-						 % DAYS_LIMIT)
+    # Limit the requested forecast days.
+    if opts.forecast > DAYS_LIMIT or opts.forecast < 0:
+        cli_parser.error('Days to forecast must be between 0 and {}\
+                         '.format(DAYS_LIMIT))
 
-	# Get the weather.
-	weather = get_weather(opts.location_code, opts)
+    # Get the weather.
+    weather = get_weather(opts.location_code, opts)
 
-	# Create the report.
-	report = create_report(weather, opts)
+    # Create the report.
+    report = create_report(weather, opts)
 
-	if report is None:
-		return -1
-	else:
-		if opts.output == '':
-			print report
-		else:
-			# Write the weather conditions to a file
-			try:
-				with open(opts.output, "w") as output_file:
-					output_file.writelines(report)
-			except IOError:
-				print "Unable to open file " + opts.output + " for output"
+    if report is None:
+        return -1
+    else:
+        if opts.output == '':
+            print report
+        else:
+            # Write the weather conditions to a file
+            try:
+                with open(opts.output, "w") as output_file:
+                    output_file.writelines(report)
+            except IOError:
+                print "Unable to open file " + opts.output + " for output"
 
 if __name__ == "__main__":
     main(sys.argv[1:])
