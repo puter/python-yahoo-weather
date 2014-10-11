@@ -222,17 +222,15 @@ def main(argv):
     cli_parser = create_cli_parser()
 
     # Get the options and arguments.
-<<<<<<< HEAD
-    opts = cli_parser.parse_args(argv)
+    args = cli_parser.parse_args(argv)
 
     # Limit the requested forecast days.
-    if opts.forecast > DAYS_LIMIT or opts.forecast < 0:
+    if args.forecast > DAYS_LIMIT or args.forecast < 0:
         cli_parser.error('Days to forecast must be between 0 and {}\
                          '.format(DAYS_LIMIT))
 
     # Get the weather.
-    weather = get_weather(opts.location_code, opts)
-=======
+    weather = get_weather(args.location_code, args)
     args = cli_parser.parse_args(argv)
 
     # Limit the requested forecast days.
@@ -242,7 +240,6 @@ def main(argv):
 
     # Get the weather.
     weather = get_weather(args.location_code, args)
->>>>>>> a6dddd35957f1f0d80c9cb4a53c1476a3eed04e0
 
     # Create the report.
     report = create_report(weather, args)
