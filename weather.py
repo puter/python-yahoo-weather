@@ -222,7 +222,6 @@ def main(argv):
 						 % DAYS_LIMIT)
 
 	# Get the weather.
-	# weather = get_weather(args.location_code, opts)
 	weather = get_weather(opts.location_code, opts)
 
 	# Create the report.
