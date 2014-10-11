@@ -222,6 +222,7 @@ def main(argv):
     cli_parser = create_cli_parser()
 
     # Get the options and arguments.
+<<<<<<< HEAD
     opts = cli_parser.parse_args(argv)
 
     # Limit the requested forecast days.
@@ -231,22 +232,33 @@ def main(argv):
 
     # Get the weather.
     weather = get_weather(opts.location_code, opts)
+=======
+    args = cli_parser.parse_args(argv)
+
+    # Limit the requested forecast days.
+    if args.forecast > DAYS_LIMIT or args.forecast < 0:
+        cli_parser.error("Days to forecast must be between 0 and %d"
+                         % DAYS_LIMIT)
+
+    # Get the weather.
+    weather = get_weather(args.location_code, args)
+>>>>>>> a6dddd35957f1f0d80c9cb4a53c1476a3eed04e0
 
     # Create the report.
-    report = create_report(weather, opts)
+    report = create_report(weather, args)
 
     if report is None:
         return -1
     else:
-        if opts.output == '':
+        if args.output == '':
             print report
         else:
             # Write the weather conditions to a file
             try:
-                with open(opts.output, "w") as output_file:
+                with open(args.output, "w") as output_file:
                     output_file.writelines(report)
             except IOError:
-                print "Unable to open file " + opts.output + " for output"
+                print "Unable to open file " + args.output + " for output"
 
 if __name__ == "__main__":
     main(sys.argv[1:])
