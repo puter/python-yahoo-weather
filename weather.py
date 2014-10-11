@@ -206,39 +206,40 @@ def create_cli_parser():
     return cli_parser
 
 def main(argv):
-    """
-    Main entry point of this file. Parses argv, gets weather, then emits output
-    """
+	"""
+	Main entry point of this file. Parses argv, gets weather, then emits output
+	"""
 
-    # Create the command line parser.
-    cli_parser = create_cli_parser()
+	# Create the command line parser.
+	cli_parser = create_cli_parser()
 
-    # Get the options and arguments.
-    opts, args = cli_parser.parse_args(argv)
+	# Get the options and arguments.
+	opts = cli_parser.parse_args(argv)
 
-    # Limit the requested forecast days.
-    if opts.forecast > DAYS_LIMIT or opts.forecast < 0:
-        cli_parser.error("Days to forecast must be between 0 and %d"
-                         % DAYS_LIMIT)
+	# Limit the requested forecast days.
+	if opts.forecast > DAYS_LIMIT or opts.forecast < 0:
+		cli_parser.error("Days to forecast must be between 0 and %d"
+						 % DAYS_LIMIT)
 
-    # Get the weather.
-    weather = get_weather(args.location_code, opts)
+	# Get the weather.
+	# weather = get_weather(args.location_code, opts)
+	weather = get_weather(opts.location_code, opts)
 
-    # Create the report.
-    report = create_report(weather, opts)
+	# Create the report.
+	report = create_report(weather, opts)
 
-    if report is None:
-        return -1
-    else:
-        if opts.output == '':
-            print report
-        else:
-            # Write the weather conditions to a file
-            try:
-                with open(opts.output, "w") as output_file:
-                    output_file.writelines(report)
-            except IOError:
-                print "Unable to open file " + opts.output + " for output"
+	if report is None:
+		return -1
+	else:
+		if opts.output == '':
+			print report
+		else:
+			# Write the weather conditions to a file
+			try:
+				with open(opts.output, "w") as output_file:
+					output_file.writelines(report)
+			except IOError:
+				print "Unable to open file " + opts.output + " for output"
 
 if __name__ == "__main__":
     main(sys.argv[1:])
